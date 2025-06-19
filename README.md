@@ -1,50 +1,113 @@
-# Welcome to your Expo app 👋
+# CommUnity 💬
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Une application mobile de communication d'équipe développée avec React Native et Expo.
 
-## Get started
+## 🎯 Fonctionnalités
 
-1. Install dependencies
+✅ **Authentification complète**
+- Connexion / Inscription avec Firebase Auth
+- Gestion des rôles (Admin / Employé)
+- Code administrateur pour créer des comptes admin
 
+✅ **Chat en temps réel**
+- Messages instantanés pour toute l'équipe
+- Interface intuitive et responsive
+- Affichage des timestamps
+
+✅ **Gestion des employés (Admin)**
+- Ajout de nouveaux employés
+- Liste des utilisateurs avec leurs rôles
+- Interface d'administration dédiée
+
+✅ **Profil utilisateur**
+- Informations personnelles
+- Déconnexion sécurisée
+- Affichage du rôle et date d'inscription
+
+## 🚀 Installation
+
+1. **Cloner le projet**
+   ```bash
+   git clone <votre-repo>
+   cd CommUnity
+   ```
+
+2. **Installer les dépendances**
    ```bash
    npm install
    ```
 
-2. Start the app
+3. **Configurer Firebase**
+   - Suivez les instructions dans `FIREBASE_SETUP.md`
+   - Remplacez la configuration dans `config/firebase.ts`
 
+4. **Lancer l'application**
    ```bash
-   npx expo start
+   npm run web    # Pour le web
+   npm run ios    # Pour iOS
+   npm run android # Pour Android
    ```
 
-In the output, you'll find options to open the app in a
+## 🔧 Technologies utilisées
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- **React Native** avec Expo
+- **Firebase** (Auth, Firestore, Storage)
+- **React Navigation** pour la navigation
+- **TypeScript** pour le typage
+- **Expo Router** pour le routing
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 📱 Écrans
 
-## Get a fresh project
+1. **Authentification**
+   - Connexion
+   - Inscription (avec option admin)
 
-When you're ready, run:
+2. **Chat principal**
+   - Messages en temps réel
+   - Interface de saisie
 
-```bash
-npm run reset-project
-```
+3. **Administration** (Admin uniquement)
+   - Ajout d'employés
+   - Liste des utilisateurs
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+4. **Profil**
+   - Informations utilisateur
+   - Déconnexion
 
-## Learn more
+## 🔐 Rôles et permissions
 
-To learn more about developing your project with Expo, look at the following resources:
+### Administrateur
+- Peut ajouter de nouveaux employés
+- Accès à l'interface d'administration
+- Toutes les fonctionnalités employé
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Employé
+- Accès au chat d'équipe
+- Gestion de son profil
+- Consultation des messages
 
-## Join the community
+## 🎨 Design
 
-Join our community of developers creating universal apps.
+- Interface moderne et épurée
+- Couleurs cohérentes (bleu #007AFF)
+- Responsive design
+- Animations fluides
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## 📋 Code administrateur
+
+Le code par défaut pour créer un compte administrateur est : **ADMIN2024**
+
+Vous pouvez le modifier dans `app/auth/register.tsx` ligne 18.
+
+## 🔮 Fonctionnalités futures
+
+- Upload de fichiers dans le chat
+- Notifications push
+- Gestion des équipes/groupes
+- Modération des messages
+- Mode sombre
+- Recherche dans les messages
+
+## 📄 Licence
+
+Ce projet est sous licence MIT.

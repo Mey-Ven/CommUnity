@@ -1,0 +1,18 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Règles pour les utilisateurs
+    match /users/{userId} {
+      // Permettre à un utilisateur de lire et écrire ses propres données
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Permettre à tous les utilisateurs authentifiés de lire les profils des autres
+      allow read: if request.auth != null;
+    }
+    
+    // Règles pour les messages
+    match /messages/{messageId} {
+      // Permettre à tous les utilisateurs authentifiés de lire et écrire des messages
+      allow read, write: if request.auth != null;
+    }
+  }
+}
