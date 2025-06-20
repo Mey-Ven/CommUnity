@@ -32,7 +32,7 @@ export function useFileManager() {
 
     const filesQuery = query(
       collection(db, 'files'),
-      orderBy('uploadDate', 'desc')
+      orderBy('uploadedAt', 'desc')
     );
 
     const unsubscribe = onSnapshot(
@@ -44,8 +44,13 @@ export function useFileManager() {
           filesData.push({
             id: doc.id,
             ...data,
-            uploadDate: data.uploadDate?.toDate() || new Date(),
+            uploadedAt: data.uploadedAt?.toDate() || new Date(),
+            uploadDate: data.uploadedAt?.toDate() || data.uploadDate?.toDate() || new Date(), // Backward compatibility
             lastDownloaded: data.lastDownloaded?.toDate(),
+            // Ensure backward compatibility fields
+            uploaderId: data.uploadedBy?.id || data.uploaderId,
+            uploaderName: data.uploadedBy?.name || data.uploaderName,
+            downloadURL: data.url || data.downloadURL,
           } as FileMetadata);
         });
         setFiles(filesData);
@@ -90,8 +95,8 @@ export function useFileManager() {
       // Trigger download
       if (typeof window !== 'undefined') {
         const link = document.createElement('a');
-        link.href = file.downloadURL;
-        link.download = file.originalName;
+        link.href = file.url || file.downloadURL || '';
+        link.download = file.originalName || file.name;
         link.target = '_blank';
         document.body.appendChild(link);
         link.click();
@@ -122,7 +127,8 @@ export function useFileManager() {
     }
 
     // Check permissions
-    const canDelete = user.role === 'admin' || user.id === file.uploaderId;
+    const uploaderId = file.uploadedBy?.id || file.uploaderId;
+    const canDelete = user.role === 'admin' || user.id === uploaderId;
     if (!canDelete) {
       throw new Error('Vous n\'avez pas les permissions pour supprimer ce fichier');
     }
@@ -143,7 +149,9 @@ export function useFileManager() {
 
   // Get files by uploader
   const getFilesByUploader = useCallback((uploaderId: string) => {
-    return files.filter(file => file.uploaderId === uploaderId);
+    return files.filter(file =>
+      (file.uploadedBy?.id || file.uploaderId) === uploaderId
+    );
   }, [files]);
 
   // Get files by category
@@ -154,9 +162,9 @@ export function useFileManager() {
   // Search files
   const searchFiles = useCallback((searchTerm: string) => {
     const term = searchTerm.toLowerCase();
-    return files.filter(file => 
-      file.originalName.toLowerCase().includes(term) ||
-      file.uploaderName.toLowerCase().includes(term)
+    return files.filter(file =>
+      (file.originalName || file.name).toLowerCase().includes(term) ||
+      (file.uploadedBy?.name || file.uploaderName || '').toLowerCase().includes(term)
     );
   }, [files]);
 

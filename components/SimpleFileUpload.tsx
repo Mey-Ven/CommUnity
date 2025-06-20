@@ -14,47 +14,63 @@ export function SimpleFileUpload({ onUploadComplete, onUploadError }: SimpleFile
 
   const pickAndUploadFile = async () => {
     try {
+      console.log('🔄 Starting file upload process...');
       setIsUploading(true);
 
       // Pick file using Expo DocumentPicker
+      console.log('📁 Opening file picker...');
       const result = await DocumentPicker.getDocumentAsync({
         type: '*/*', // Allow all file types
         copyToCacheDirectory: true,
         multiple: false,
       });
 
+      console.log('📁 File picker result:', result);
+
       if (result.canceled) {
+        console.log('❌ File selection canceled');
         setIsUploading(false);
         return;
       }
 
       const file = result.assets[0];
-      
+      console.log('📄 Selected file:', {
+        name: file.name,
+        size: file.size,
+        type: file.mimeType,
+        uri: file.uri
+      });
+
       // Convert to File object for web compatibility
       let fileToUpload: File;
-      
+
       if (Platform.OS === 'web') {
         // On web, the file is already a File object
+        console.log('🌐 Web platform detected, using file directly');
         fileToUpload = file as any;
       } else {
         // On mobile, create a File-like object
+        console.log('📱 Mobile platform detected, converting to File object');
         const response = await fetch(file.uri);
         const blob = await response.blob();
         fileToUpload = new File([blob], file.name, { type: file.mimeType || 'application/octet-stream' });
       }
 
+      console.log('⬆️ Starting upload to Supabase...');
       // Upload the file
       const fileMetadata = await uploadFile(fileToUpload);
+      console.log('✅ Upload successful:', fileMetadata);
 
       Alert.alert('Success', 'File uploaded successfully to Supabase!');
       onUploadComplete?.(fileMetadata.id);
 
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error('❌ Upload error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Upload failed';
       Alert.alert('Upload Error', errorMessage);
       onUploadError?.(errorMessage);
     } finally {
+      console.log('🏁 Upload process finished');
       setIsUploading(false);
     }
   };
@@ -70,7 +86,7 @@ export function SimpleFileUpload({ onUploadComplete, onUploadError }: SimpleFile
           {isUploading ? '📤 Uploading...' : '🗂️ Upload to Supabase (Free)'}
         </Text>
       </TouchableOpacity>
-      
+
       {isUploading && (
         <Text style={styles.uploadingText}>
           Uploading to Supabase Storage...
