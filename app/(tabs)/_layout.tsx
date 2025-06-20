@@ -46,6 +46,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="message.fill" color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="files"
+        options={{
+          title: 'Fichiers',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="folder.fill" color={color} />,
+        }}
+      />
       {user.role === 'admin' && (
         <Tabs.Screen
           name="admin"

@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
+  Platform,
 } from 'react-native';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
@@ -24,6 +25,8 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '../../config/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { User } from '../../types';
+import { useFileManager } from '../../hooks/useFileManager';
+import { formatFileSize } from '../../utils/fileValidation';
 
 export default function AdminScreen() {
   const [employees, setEmployees] = useState<User[]>([]);
@@ -36,6 +39,7 @@ export default function AdminScreen() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const { user } = useAuth();
+  const { files, getFileStats, deleteFile } = useFileManager();
 
   useEffect(() => {
     const usersRef = collection(db, 'users');
@@ -138,6 +142,22 @@ export default function AdminScreen() {
   const retryLoadUsers = () => {
     setError(null);
     setInitialLoading(true);
+  };
+
+  const handleDeleteFile = async (file: any) => {
+    const confirmDelete = Platform.OS === 'web'
+      ? window.confirm(`Êtes-vous sûr de vouloir supprimer "${file.originalName}" ?`)
+      : true;
+
+    if (confirmDelete) {
+      try {
+        await deleteFile(file);
+        setSuccessMessage(`Fichier "${file.originalName}" supprimé avec succès !`);
+        setShowSuccess(true);
+      } catch (error: any) {
+        setError(`Erreur lors de la suppression: ${error.message}`);
+      }
+    }
   };
 
   const renderEmployee = ({ item }: { item: User }) => (
@@ -264,6 +284,57 @@ export default function AdminScreen() {
             scrollEnabled={false}
             showsVerticalScrollIndicator={false}
           />
+        )}
+      </View>
+
+      {/* File Management Section */}
+      <View style={styles.fileStatsSection}>
+        <Text style={styles.sectionTitle}>Statistiques des fichiers</Text>
+
+        {(() => {
+          const stats = getFileStats();
+          return (
+            <View style={styles.statsGrid}>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>{stats.totalFiles}</Text>
+                <Text style={styles.statLabel}>Fichiers</Text>
+              </View>
+
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>{formatFileSize(stats.totalSize)}</Text>
+                <Text style={styles.statLabel}>Stockage</Text>
+              </View>
+
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>{stats.totalDownloads}</Text>
+                <Text style={styles.statLabel}>Téléchargements</Text>
+              </View>
+            </View>
+          );
+        })()}
+
+        {files.length > 0 && (
+          <View style={styles.recentFilesSection}>
+            <Text style={styles.subsectionTitle}>Fichiers récents</Text>
+            {files.slice(0, 5).map((file) => (
+              <View key={file.id} style={styles.fileItem}>
+                <View style={styles.fileInfo}>
+                  <Text style={styles.fileName} numberOfLines={1}>
+                    {file.originalName}
+                  </Text>
+                  <Text style={styles.fileDetails}>
+                    {file.uploaderName} • {formatFileSize(file.size)}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.deleteFileButton}
+                  onPress={() => handleDeleteFile(file)}
+                >
+                  <Text style={styles.deleteFileButtonText}>🗑️</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
         )}
       </View>
 
@@ -399,5 +470,79 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#999',
     textAlign: 'center',
+  },
+  fileStatsSection: {
+    backgroundColor: 'white',
+    margin: 15,
+    marginTop: 0,
+    padding: 20,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    padding: 15,
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+  statNumber: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#007AFF',
+    marginBottom: 5,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+  },
+  recentFilesSection: {
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+    paddingTop: 15,
+  },
+  subsectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 10,
+  },
+  fileItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f5f5f5',
+  },
+  fileInfo: {
+    flex: 1,
+  },
+  fileName: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333',
+    marginBottom: 2,
+  },
+  fileDetails: {
+    fontSize: 12,
+    color: '#666',
+  },
+  deleteFileButton: {
+    padding: 5,
+  },
+  deleteFileButtonText: {
+    fontSize: 16,
   },
 });
